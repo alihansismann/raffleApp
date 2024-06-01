@@ -19,8 +19,10 @@
         :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
 
       <UModal v-model="isOpen">
+        
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-
+          <img src="/firework-8576_512.gif" alt="Desert" class="w-full h-48 object-cover" />
+          <br>
           <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
           <UCardBody>
             <!-- User random interval -->
@@ -47,7 +49,8 @@ import { useFirestore } from 'vuefire';
 const db = useFirestore();
 const route = useRouter();
 const loaded = ref(false);
-const isOpen = ref(false)
+const isOpen = ref(false);
+const isWinnerWon = ref(false);
 const sort = ref({
   column: 'id',
   direction: 'asc'
@@ -122,9 +125,6 @@ onMounted(async () => {
   loaded.value = true;
 });
 
-const users = query(
-  collection(db, 'user')
-);
 
 const people = computed(() => usersDocs.value?.map((doc) => {
   return {
@@ -142,6 +142,7 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
     gift: doc.data()?.gift,
   }
 }));
+console.log(usersDocs.value);
 
 function selectRandomUser() {
   const filteredUsers = usersDocs.value?.filter(user => !winnerDocs.value.find(winner => winner.data()?.userRef.id === user.id));
