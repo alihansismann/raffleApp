@@ -2,7 +2,8 @@
   <UContainer class="max-w-xl mt-5 text-center">
     <template v-if="loaded">
       <UDivider label="ÇEKİLİŞE KATILANLAR LİSTE" />
-      <UTable :rows="joinRows" :columns="columns" />
+      <UInput v-model="search" placeholder="Ara..." class="mt-5" />
+      <UTable :rows="filteredJoinRows" :columns="columns" />
       <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
         <UPagination v-model="pageUser" :page-count="pageCount" :total="people?.length ?? 0" />
       </div>
@@ -78,8 +79,14 @@ const pageUser = ref(1)
 const pageWinner = ref(1)
 const pageCount = 5
 
+const search = ref('')
 const joinRows = computed(() => {
   return people.value?.slice((pageUser.value - 1) * pageCount, (pageUser.value) * pageCount) || [];
+})
+const filteredJoinRows = computed(() => {
+  return joinRows.value?.filter((row) => {
+    return row.name.toLowerCase().includes(search.value.toLowerCase()) || row.surname.toLowerCase().includes(search.value.toLowerCase())
+  })
 })
 
 
