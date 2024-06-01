@@ -161,6 +161,10 @@ const randomGiftInterval = ref('');
 const cekilisProcess = ref(false);
 let id = 0;
 async function cekilis() {
+  if(usersDocs.value.length === 0) {
+    alert('Çekilişe katılan kullanıcı bulunamadı.');
+    return;
+  }
   cekilisProcess.value = true;
   console.log(giftsDocs.value.length);
 
