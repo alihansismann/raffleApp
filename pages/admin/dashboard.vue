@@ -6,26 +6,28 @@
       <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
         <UPagination v-model="pageUser" :page-count="pageCount" :total="people?.length ?? 0" />
       </div>
-      <div class="pb-5">
-        <UButton label="Çekiliş Yap!" @click="cekilis" />
+
+      <div class="pb-5 flex flex-col items-center">
+        <span class="mb-4">Kalan Hediye Sayısı: {{ giftsDocs.length - winnerDocs.length }}</span>
+        <UButton label="Çekiliş Yap!" @click="cekilis"
+          :disabled="cekilisProcess || giftsDocs.length === winnerDocs.length" v-if="giftsDocs.length !== winnerDocs.length" />
+        <UBadge label="HEDİYE KALMADI!" color="rose" v-if="giftsDocs.length === winnerDocs.length" />
       </div>
       <UDivider label="KAZANANLAR" class="pt-5" />
-      <UTable loading :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
-        :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnerRows" :columns="winColumns" />
-      <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
-        <UPagination v-model="pageWinner" :page-count="pageCount" :total="winnersList.length" />
-      </div>
+      <UTable :sort="sort" loading :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
+        :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
+
       <UModal v-model="isOpen">
         <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
 
-          <UDivider label="Kazanan Belirleniyor..." />
+          <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
           <UCardBody>
             <!-- User random interval -->
-            <span class="text-2xl font-bold">Kazanan: </span>
+            <UBadge label="Kazanan" type="success" color="green" class="mt-4"/>&nbsp;&nbsp;
             <span v-text="randomUserInterval" />
             <br>
             <!-- User random interval -->
-            <span class="text-xl font-bold">Hediye: </span>
+            <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2"/>&nbsp;&nbsp;
             <span v-text="randomGiftInterval" />
           </UCardBody>
         </UCard>
@@ -45,7 +47,10 @@ const db = useFirestore();
 const route = useRouter();
 const loaded = ref(false);
 const isOpen = ref(false)
-
+const sort = ref({
+  column: 'id',
+  direction: 'asc'
+})
 const columns = [{
   key: 'name',
   label: 'İsim'
@@ -56,7 +61,8 @@ const columns = [{
 
 const winColumns = [{
   key: 'id',
-  label: 'Sıra'
+  label: 'Sıra',
+  sortable: true
 }, {
   key: 'name',
   label: 'İsim'
@@ -76,9 +82,7 @@ const joinRows = computed(() => {
   return people.value?.slice((pageUser.value - 1) * pageCount, (pageUser.value) * pageCount) || [];
 })
 
-const winnerRows = computed(() => {
-  return winnersList.value.slice((pageWinner.value - 1) * pageCount, (pageWinner.value) * pageCount)
-})
+
 
 
 const giftsDocs = ref<DocumentSnapshot[]>([]);
@@ -132,29 +136,28 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
   }
 }));
 
-let usedGifts: DocumentSnapshot[] = [];
-let winners: DocumentSnapshot[] = [];
-
 function selectRandomUser() {
-  const filteredUsers = usersDocs.value?.filter(user => !winners.find(winner => winner.id === user.id)) || [];
+  const filteredUsers = usersDocs.value?.filter(user => !winnerDocs.value.find(winner => winner.data()?.userRef.id === user.id));
   const randomIndex = Math.floor(Math.random() * filteredUsers.length);
   const randomUser = filteredUsers[randomIndex];
   return randomUser;
 }
 
-function selectRandomGift() {
-  const filteredGifts = giftsDocs.value.filter(gift => !usedGifts.find(usedGift => usedGift.id === gift.id));
-  const randomGiftIndex = Math.floor(Math.random() * filteredGifts.length);
-  const randomGift = filteredGifts[randomGiftIndex];
-  return randomGift;
+function selectNextGift() {
+  const filteredGifts = giftsDocs.value?.filter(gift => !winnerDocs.value.find(winner => winner.data()?.giftRef.id === gift.id));
+  const sortedGifts = filteredGifts.sort((a, b) => a.data()?.sort - b.data()?.sort);
+  return sortedGifts[0];
 }
 
 const randomUserInterval = ref('');
 const randomGiftInterval = ref('');
-
+const cekilisProcess = ref(false);
 let id = 0;
 async function cekilis() {
-  if (id === giftsDocs.value.length) {
+  cekilisProcess.value = true;
+  console.log(giftsDocs.value.length);
+
+  if (winnerDocs.value.length === giftsDocs.value.length) {
     alert('Hediye kalmadı.');
     return;
   }
@@ -166,10 +169,10 @@ async function cekilis() {
   }, 50);
 
   let randomUser: DocumentSnapshot;
-  let randomGift: DocumentSnapshot;
+  let gift: DocumentSnapshot;
 
-  randomGift = selectRandomGift();
-  randomGiftInterval.value = randomGift.data()?.label;
+  gift = selectNextGift();
+  randomGiftInterval.value = gift.data()?.label;
 
   // Select random user
   setTimeout(async () => {
@@ -180,23 +183,22 @@ async function cekilis() {
     // Set random user
     randomUserInterval.value = randomUser.data()?.name + ' ' + randomUser.data()?.surname;
 
-    winners.push(randomUser);
-    usedGifts.push(randomGift);
-
     // Add winner to database
     try {
-      id = id + 1;
       await addDoc(collection(db, 'winners'), {
-        id: id,
+        id: winnerDocs.value.length + 1,
+        userRef: doc(db, 'user', randomUser.id),
         name: randomUser.data()?.name ?? '',
         surname: randomUser.data()?.surname ?? '',
-        gift: randomGift.data()?.label ?? '',
+        gift: gift.data()?.label ?? '',
+        giftRef: doc(db, 'gifts', gift.id),
       });
     } catch (error) {
       console.error("Error signing in: ", error);
       alert('Çekiliş başarısız, lütfen bilgilerinizi kontrol edin.');
     }
 
+    cekilisProcess.value = false;
   }, 5000);
 }
 </script>
