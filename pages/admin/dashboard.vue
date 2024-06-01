@@ -1,40 +1,55 @@
 <template>
-  <UContainer class="max-w-xl mt-5 text-center">
+  <UContainer class="max-w-xxl mt-5 text-center">
     <template v-if="loaded">
-      <UDivider label="ÇEKİLİŞE KATILANLAR LİSTE" />
-      <UInput v-model="search" placeholder="Ara..." class="mt-5" />
-      <UTable :rows="filteredJoinRows" :columns="columns" />
-      <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
-        <UPagination v-model="pageUser" :page-count="pageCount" :total="people?.length ?? 0" />
-      </div>
+      <UCard :ui="{ body: { base: 'flex' } }">
+        <div class="space-y-4 flex-auto ">
+          <UDivider label="ÇEKİLİŞE KATILANLAR LİSTE" />
+          <UInput v-model="search" placeholder="Ara..." class="mt-5" />
+          <UTable :rows="filteredJoinRows" :columns="columns"  />
+          <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
+            <UPagination v-model="pageUser" :page-count="pageCount" :total="people?.length ?? 0" />
+          </div>
 
-      <div class="pb-5 flex flex-col items-center">
-        <span class="mb-4">Kalan Hediye Sayısı: {{ giftsDocs.length - winnerDocs.length }}</span>
-        <UButton label="Çekiliş Yap!" @click="cekilis"
-          :disabled="cekilisProcess || giftsDocs.length === winnerDocs.length" v-if="giftsDocs.length !== winnerDocs.length" />
-        <UBadge label="HEDİYE KALMADI!" color="rose" v-if="giftsDocs.length === winnerDocs.length" />
-      </div>
-      <UDivider label="KAZANANLAR" class="pt-5" />
-      <UTable :sort="sort" loading :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
-        :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
+          <div class="pb-5 flex flex-col items-center">
+            <span class="mb-4">Kalan Hediye Sayısı: {{ giftsDocs.length - winnerDocs.length }}</span>
+            <UButton label="Çekiliş Yap!" @click="cekilis"
+              :disabled="cekilisProcess || giftsDocs.length === winnerDocs.length"
+              v-if="giftsDocs.length !== winnerDocs.length" />
+            <UBadge label="HEDİYE KALMADI!" color="rose" v-if="giftsDocs.length === winnerDocs.length" />
+          </div>
+          <UDivider label="KAZANANLAR" class="pt-5" />
+          <UTable :sort="sort" loading
+            :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
+            :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
 
-      <UModal v-model="isOpen">
-        
-        <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-          <img src="/firework-8576_512.gif" alt="Desert" class="w-full h-48 object-cover" />
-          <br>
-          <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
-          <UCardBody>
-            <!-- User random interval -->
-            <UBadge label="Kazanan" type="success" color="green" class="mt-4"/>&nbsp;&nbsp;
-            <span v-text="randomUserInterval" />
-            <br>
-            <!-- User random interval -->
-            <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2"/>&nbsp;&nbsp;
-            <span v-text="randomGiftInterval" />
-          </UCardBody>
-        </UCard>
-      </UModal>
+          <UModal v-model="isOpen">
+
+            <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
+              <UCard v-if="isWinnerWon">
+                <img src="/firework-8576_512.gif" alt="Desert" class="w-full h-48 object-cover" />
+                <br>
+              </UCard>
+              <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
+              <UCardBody>
+                <!-- User random interval -->
+                <UBadge label="Kazanan" type="success" color="green" class="mt-4" />&nbsp;&nbsp;
+                <span v-text="randomUserInterval" />
+                <br>
+                <!-- User random interval -->
+                <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2" />&nbsp;&nbsp;
+                <span v-text="randomGiftInterval" />
+              </UCardBody>
+            </UCard>
+          </UModal>
+        </div>
+
+        <UDivider orientation="vertical" class="flex-initial w-32" />
+
+        <div class="space-y-4 flex-initial w-96 text-center">
+          <img src="/frame2.png" alt="Desert" class="w-full object-cover" />
+        </div>
+      </UCard>
+
     </template>
     <template v-else>
       Yükleniyor...
@@ -43,6 +58,7 @@
 </template>
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '#ui/types'
+import { set } from 'firebase/database';
 import { doc, collection, addDoc, getDocs, query, where, DocumentSnapshot, onSnapshot, type DocumentData, QueryDocumentSnapshot, QuerySnapshot, } from 'firebase/firestore'
 import { useFirestore } from 'vuefire';
 
@@ -92,9 +108,6 @@ const filteredJoinRows = computed(() => {
   })
 })
 
-
-
-
 const giftsDocs = ref<DocumentSnapshot[]>([]);
 const usersDocs = ref<DocumentSnapshot[]>([]);
 const winnerDocs = ref<DocumentSnapshot[]>([]);
@@ -125,7 +138,6 @@ onMounted(async () => {
   loaded.value = true;
 });
 
-
 const people = computed(() => usersDocs.value?.map((doc) => {
   return {
     name: doc.data()?.name,
@@ -142,7 +154,6 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
     gift: doc.data()?.gift,
   }
 }));
-console.log(usersDocs.value);
 
 function selectRandomUser() {
   const filteredUsers = usersDocs.value?.filter(user => !winnerDocs.value.find(winner => winner.data()?.userRef.id === user.id));
@@ -162,7 +173,7 @@ const randomGiftInterval = ref('');
 const cekilisProcess = ref(false);
 let id = 0;
 async function cekilis() {
-  if(usersDocs.value.length === 0) {
+  if (usersDocs.value.length === 0) {
     alert('Çekilişe katılan kullanıcı bulunamadı.');
     return;
   }
@@ -212,5 +223,8 @@ async function cekilis() {
 
     cekilisProcess.value = false;
   }, 5000);
+  setTimeout(() => {
+    isWinnerWon.value = true;
+  }, 5200);
 }
 </script>
