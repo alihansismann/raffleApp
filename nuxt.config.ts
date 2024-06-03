@@ -5,13 +5,13 @@ export default defineNuxtConfig({
   modules: ["nuxt-vuefire", "@nuxt/ui"],
   vuefire: {
     config: {
-      apiKey: "AIzaSyBgR4pomHxm6sUN0WgKyYKKwyVFeEttga8",
-      authDomain: "cekilis-ab2a9.firebaseapp.com",
-      projectId: "cekilis-ab2a9",
-      storageBucket: "cekilis-ab2a9.appspot.com",
-      messagingSenderId: "645012041406",
-      appId: "1:645012041406:web:aad152e7ac6a6654adb8ef",
-      measurementId: "G-6NTDE522V6"
+      apiKey: "AIzaSyC_TyMf6pupq3vo4d2gIt6unkrBlbfhFS4",
+      authDomain: "jetkolaycekilis.firebaseapp.com",
+      projectId: "jetkolaycekilis",
+      storageBucket: "jetkolaycekilis.appspot.com",
+      messagingSenderId: "164345541183",
+      appId: "1:164345541183:web:783b1eef8a656caa42fe8a",
+      measurementId: "G-0YH2KP31QG"
     },
   },
   pages: true,

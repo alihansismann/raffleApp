@@ -1,5 +1,6 @@
 <template>
-  <UContainer class="max-w-xl mt-5">
+  <UContainer class="max-w-xl mt-5 justify-items-center justify-center">
+    <img src="/jetkolay.png" alt="Desert" class=" object-cover justify-center" />
     <UDivider label="KATILIM FORMU" />
     <UForm :validate="validate" :state="state" class="space-y-4" @submit="submitForm">
       <UFormGroup label="Ad" name="name">
@@ -83,6 +84,7 @@ const validate = (state: any): FormError[] => {
   if (!state.email) errors.push({ path: 'email', message: 'E-Mail adresinizi doldurmanız gerekiyor' })
   return errors
 }
+
 
 
 

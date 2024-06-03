@@ -1,18 +1,21 @@
 <template>
   <UContainer class="max-w-xxl mt-5 text-center">
     <template v-if="loaded">
+      <UCard>
+        <img src="/jetkolay.png" alt="logo" class="w-32 mx-auto" />
+      </UCard>
       <UCard :ui="{ body: { base: 'flex' } }">
         <div class="space-y-4 flex-auto ">
           <UDivider label="ÇEKİLİŞE KATILANLAR LİSTE" />
           <UInput v-model="search" placeholder="Ara..." class="mt-5" />
-          <UTable :rows="filteredJoinRows" :columns="columns"  />
+          <UTable :rows="filteredJoinRows" :columns="columns" />
           <div class="flex justify-end px-3 py-3.5 border-t border-gray-200 dark:border-gray-700">
             <UPagination v-model="pageUser" :page-count="pageCount" :total="people?.length ?? 0" />
           </div>
 
           <div class="pb-5 flex flex-col items-center">
             <span class="mb-4">Kalan Hediye Sayısı: {{ giftsDocs.length - winnerDocs.length }}</span>
-            <UButton label="Çekiliş Yap!" @click="cekilis"
+            <UButton label="Çekiliş Yap!" class="w-64 h-12 justify-center" @click="cekilis"
               :disabled="cekilisProcess || giftsDocs.length === winnerDocs.length"
               v-if="giftsDocs.length !== winnerDocs.length" />
             <UBadge label="HEDİYE KALMADI!" color="rose" v-if="giftsDocs.length === winnerDocs.length" />
@@ -26,18 +29,18 @@
 
             <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
               <UCard v-if="isWinnerWon">
-                <img src="/firework-8576_512.gif" alt="Desert" class="w-full h-48 object-cover" />
+                <img src="/firework-8576_512.gif" alt="Desert" class="object-cover" />
                 <br>
               </UCard>
               <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
               <UCardBody>
                 <!-- User random interval -->
-                <UBadge label="Kazanan" type="success" color="green" class="mt-4" />&nbsp;&nbsp;
-                <span v-text="randomUserInterval" />
+                <UBadge label="Kazanan" type="success" color="green" class="mt-4" size="lg" />&nbsp;&nbsp;
+                <span v-text="randomUserInterval" style="font-size: 25px;" />
                 <br>
                 <!-- User random interval -->
-                <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2" />&nbsp;&nbsp;
-                <span v-text="randomGiftInterval" />
+                <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2" size="lg" />&nbsp;&nbsp;
+                <span v-text="randomGiftInterval" style="font-size: 25px;" />
               </UCardBody>
             </UCard>
           </UModal>
@@ -46,7 +49,14 @@
         <UDivider orientation="vertical" class="flex-initial w-32" />
 
         <div class="space-y-4 flex-initial w-96 text-center">
-          <img src="/frame2.png" alt="Desert" class="w-full object-cover" />
+          <img src="/frame.png" alt="Desert" class="w-full object-cover" />
+          <UTable :rows="gifts" :columns="[{ key: 'label', label: 'Hediyeler' }]" />
+          <UForm @submit="addGift" class="space-y-4">
+            <UFormGroup label="Hediye Ekle" name="gift">
+              <UInput v-model="gift" type="text" />
+            </UFormGroup>
+            <UButton type="submit" label="Hediye Ekle" />
+          </UForm>
         </div>
       </UCard>
 
@@ -154,6 +164,28 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
     gift: doc.data()?.gift,
   }
 }));
+
+
+
+const gifts = computed(() => giftsDocs.value.map((doc) => {
+  return {
+    label: doc.data()?.label,
+  }
+}));
+
+//add gift
+const gift = ref('');
+async function addGift() {
+  try {
+    await addDoc(collection(db, 'gifts'), {
+      label: gift.value,
+      sort: giftsDocs.value.length + 1,
+    });
+  } catch (error) {
+    console.error("Error adding document: ", error);
+    alert('Bir hata oluştu, lütfen tekrar deneyin.');
+  }
+}
 
 function selectRandomUser() {
   const filteredUsers = usersDocs.value?.filter(user => !winnerDocs.value.find(winner => winner.data()?.userRef.id === user.id));
