@@ -6,6 +6,10 @@
       </UCard>
       <UCard :ui="{ body: { base: 'flex' } }">
         <div class="space-y-4 flex-auto ">
+          <!-- delete all users-->
+          <div class="text-end">
+            <UButton label="Sıfırla" @click="deleteAllUsers" />
+          </div>
           <UDivider label="ÇEKİLİŞE KATILANLAR LİSTE" />
           <UInput v-model="search" placeholder="Ara..." class="mt-5" />
           <UTable :rows="filteredJoinRows" :columns="columns" />
@@ -58,7 +62,7 @@
               <span>{{ gift.label }}</span>
               <UButton label="Sil" @click="deleteGift(gift.label)" />
             </div>
-            
+
           </div>
 
           <UForm @submit="addGift" class="space-y-4">
@@ -176,11 +180,6 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
   }
 }));
 
-
-
-
-
-
 const gifts = computed(() => {
   return giftsDocs.value
     .map((doc) => {
@@ -193,6 +192,19 @@ const gifts = computed(() => {
 });
 
 
+//delete all users with check confirm
+async function deleteAllUsers() {
+  if (confirm('Tüm kullanıcılar silinecek, emin misiniz?')) {
+    try {
+      usersDocs.value.forEach(async (user) => {
+        await deleteDoc(doc(db, 'user', user.id));
+      });
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      alert('Bir hata oluştu, lütfen tekrar deneyin.');
+    }
+  }
+}
 
 
 
@@ -219,7 +231,7 @@ async function deleteGift(label: string) {
       return;
     }
     await deleteDoc(doc(db, 'gifts', giftDoc.id));
-    
+
   } catch (error) {
     console.error("Error deleting document: ", error);
     alert('Bir hata oluştu, lütfen tekrar deneyin.');
