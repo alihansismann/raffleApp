@@ -1,5 +1,5 @@
 <template>
-  <UContainer class="max-w-xxl mt-5 text-center">
+  <UContainer class="max-w-9xl mt-5 text-center">
     <template v-if="loaded">
       <UCard>
         <img src="/jetkolay.png" alt="logo" class="w-32 mx-auto" />
@@ -48,9 +48,19 @@
 
         <UDivider orientation="vertical" class="flex-initial w-32" />
 
-        <div class="space-y-4 flex-initial w-96 text-center">
+        <div class="space-y-4 flex-initial w-4/12 text-center">
           <img src="/frame.png" alt="Desert" class="w-full object-cover" />
-          <UTable :rows="gifts" :columns="[{ key: 'label', label: 'Hediyeler' }]" />
+          <!-- list gifts not use table-->
+          <UDivider label="HEDİYELER" />
+          <div class="space-y-4">
+            <div v-for="gift in gifts" :key="gift.label" class="flex justify-between items-center">
+              <span>{{ gift.sort }}</span>
+              <span>{{ gift.label }}</span>
+              <UButton label="Sil" @click="deleteGift(gift.label)" />
+            </div>
+            
+          </div>
+
           <UForm @submit="addGift" class="space-y-4">
             <UFormGroup label="Hediye Ekle" name="gift">
               <UInput v-model="gift" type="text" />
@@ -69,7 +79,7 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '#ui/types'
 import { set } from 'firebase/database';
-import { doc, collection, addDoc, getDocs, query, where, DocumentSnapshot, onSnapshot, type DocumentData, QueryDocumentSnapshot, QuerySnapshot, } from 'firebase/firestore'
+import { doc, collection, addDoc, getDocs, query, where, deleteDoc, DocumentSnapshot, onSnapshot, type DocumentData, QueryDocumentSnapshot, QuerySnapshot, } from 'firebase/firestore'
 import { useFirestore } from 'vuefire';
 
 const db = useFirestore();
@@ -77,6 +87,7 @@ const route = useRouter();
 const loaded = ref(false);
 const isOpen = ref(false);
 const isWinnerWon = ref(false);
+const selected = ref('');
 const sort = ref({
   column: 'id',
   direction: 'asc'
@@ -167,11 +178,25 @@ const winnersList = computed(() => winnerDocs.value.map((doc) => {
 
 
 
-const gifts = computed(() => giftsDocs.value.map((doc) => {
-  return {
-    label: doc.data()?.label,
-  }
-}));
+
+
+
+const gifts = computed(() => {
+  return giftsDocs.value
+    .map((doc) => {
+      return {
+        label: doc.data()?.label,
+        sort: doc.data()?.sort,
+      }
+    })
+    .sort((a, b) => a.sort - b.sort);
+});
+
+
+
+
+
+
 
 //add gift
 const gift = ref('');
@@ -186,6 +211,22 @@ async function addGift() {
     alert('Bir hata oluştu, lütfen tekrar deneyin.');
   }
 }
+//delete gift
+async function deleteGift(label: string) {
+  try {
+    const giftDoc = giftsDocs.value.find(gift => gift.data()?.label === label);
+    if (!giftDoc) {
+      return;
+    }
+    await deleteDoc(doc(db, 'gifts', giftDoc.id));
+    
+  } catch (error) {
+    console.error("Error deleting document: ", error);
+    alert('Bir hata oluştu, lütfen tekrar deneyin.');
+  }
+}
+
+
 
 function selectRandomUser() {
   const filteredUsers = usersDocs.value?.filter(user => !winnerDocs.value.find(winner => winner.data()?.userRef.id === user.id));
