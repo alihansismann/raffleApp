@@ -25,6 +25,9 @@
             <UBadge label="HEDİYE KALMADI!" color="rose" v-if="giftsDocs.length === winnerDocs.length" />
           </div>
           <UDivider label="KAZANANLAR" class="pt-5" />
+          <div class="text-end">
+            <UButton label="Sıfırla" @click="deleteAllWinners" />
+          </div>
           <UTable :sort="sort" loading
             :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
             :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
@@ -198,6 +201,18 @@ async function deleteAllUsers() {
     try {
       usersDocs.value.forEach(async (user) => {
         await deleteDoc(doc(db, 'user', user.id));
+      });
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+      alert('Bir hata oluştu, lütfen tekrar deneyin.');
+    }
+  }
+}
+async function deleteAllWinners(){
+  if (confirm('Tüm kazananlar silinecek, emin misiniz?')) {
+    try {
+      winnerDocs.value.forEach(async (winner) => {
+        await deleteDoc(doc(db, 'winners', winner.id));
       });
     } catch (error) {
       console.error("Error deleting document: ", error);
