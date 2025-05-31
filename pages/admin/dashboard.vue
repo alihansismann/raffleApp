@@ -32,17 +32,17 @@
             :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
             :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
 
-          <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-[1200px]' }">
+          <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-[1500px]' }">
 
             <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
 
               <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
               <div class="text-center space-y-4">
                 <!-- User random interval -->
-                <span v-text="randomUserInterval" style="font-size: 90px;" />
+                <span v-text="randomUserInterval" style="font-size: 150px;" />
                 <br>
                 <!-- User random interval -->
-                <span v-text="randomGiftInterval" style="font-size: 90px;" />
+                <span v-text="randomGiftInterval" style="font-size: 150px;" />
               </div>
             </UCard>
           </UModal>
