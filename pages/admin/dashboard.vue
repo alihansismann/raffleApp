@@ -42,7 +42,13 @@
                 <span v-text="randomUserInterval" style="font-size: 150px;" />
                 <br>
                 <!-- User random interval -->
+                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 150px;">
+                  🎊
+                </span>
                 <span v-text="randomGiftInterval" style="font-size: 150px;" />
+                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 150px;">
+                  🎊
+                </span>
               </div>
             </UCard>
           </UModal>
@@ -284,7 +290,7 @@ async function cekilis() {
 
   const randomUserIntervalHandler = setInterval(() => {
     randomUserInterval.value = selectRandomUser().data()?.name + ' ' + selectRandomUser().data()?.surname;
-  }, 50);
+  }, 300);
 
   let randomUser: DocumentSnapshot;
   let gift: DocumentSnapshot;
@@ -317,9 +323,9 @@ async function cekilis() {
     }
 
     cekilisProcess.value = false;
-  }, 5000);
+  }, 10000);
   setTimeout(() => {
     isWinnerWon.value = true;
-  }, 5200);
+  }, 10200);
 }
 </script>
