@@ -42,12 +42,12 @@
                 <span v-text="randomUserInterval" style="font-size: 150px;" />
                 <br>
                 <!-- User random interval -->
-                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 150px;">
-                  🎊
+                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 70px;">
+                  ⭐
                 </span>
                 <span v-text="randomGiftInterval" style="font-size: 150px;" />
-                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 150px;">
-                  🎊
+                <span v-if="isWinnerWon" class="font-bold text-green-500" style="font-size: 70px;">
+                  ⭐
                 </span>
               </div>
             </UCard>
@@ -274,6 +274,7 @@ const randomGiftInterval = ref('');
 const cekilisProcess = ref(false);
 let id = 0;
 async function cekilis() {
+  isWinnerWon.value = false;
   if (usersDocs.value.length === 0) {
     alert('Çekilişe katılan kullanıcı bulunamadı.');
     return;
