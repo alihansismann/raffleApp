@@ -32,23 +32,18 @@
             :loading-state="{ icon: 'i-heroicons-arrow-path-20-solid', label: 'Yükleniyor...' }"
             :progress="{ color: 'primary', animation: 'carousel' }" :rows="winnersList" :columns="winColumns" />
 
-          <UModal v-model="isOpen">
+          <UModal v-model="isOpen" :ui="{ width: 'sm:max-w-[1200px]' }">
 
             <UCard :ui="{ ring: '', divide: 'divide-y divide-gray-100 dark:divide-gray-800' }">
-              <UCard v-if="isWinnerWon">
-                <img src="/firework-8576_512.gif" alt="Desert" class="object-cover" />
-                <br>
-              </UCard>
+
               <UDivider :label="`${randomGiftInterval} için kazanan belirleniyor...`" />
-              <UCardBody>
+              <div class="text-center space-y-4">
                 <!-- User random interval -->
-                <UBadge label="Kazanan" type="success" color="green" class="mt-4" size="lg" />&nbsp;&nbsp;
-                <span v-text="randomUserInterval" style="font-size: 25px;" />
+                <span v-text="randomUserInterval" style="font-size: 90px;" />
                 <br>
                 <!-- User random interval -->
-                <UBadge label="&nbsp;Hediye&nbsp;" color="yellow" class="mt-2" size="lg" />&nbsp;&nbsp;
-                <span v-text="randomGiftInterval" style="font-size: 25px;" />
-              </UCardBody>
+                <span v-text="randomGiftInterval" style="font-size: 90px;" />
+              </div>
             </UCard>
           </UModal>
         </div>
@@ -208,7 +203,7 @@ async function deleteAllUsers() {
     }
   }
 }
-async function deleteAllWinners(){
+async function deleteAllWinners() {
   if (confirm('Tüm kazananlar silinecek, emin misiniz?')) {
     try {
       winnerDocs.value.forEach(async (winner) => {
